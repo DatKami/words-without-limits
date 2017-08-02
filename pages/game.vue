@@ -15,7 +15,7 @@
     <ul>
       <li v-for="player in players" :key="player.socketid">
         {{ player.playerName }}
-        <span v-if="king"> (King!)</span>
+        <span v-if="player.king"> (King!)</span>
       </li>
     </ul>
   </section>
@@ -30,56 +30,60 @@ export default {
     if (!context.params.roomCode) {
       context.redirect('/')
     }
+    let isKing = true // !!context.params.players.find((player) => {
+    //  return player.king && player.socketid === Cookies.get('session_id')
+    // })
     return {
-      king: context.params.king,
       stage: context.params.stage,
       roomCode: context.params.roomCode,
       playerName: context.params.playerName,
-      players: context.params.players
+      players: context.params.players,
+      king: isKing
     }
   },
 
   data () {
     return {
-      king: false,
-      socket
+      session_id: Cookies.get('session_id'),
+      socket,
+      stage: 0,
+      roomCode: '????',
+      playerName: '????',
+      players: [],
+      king: false
     }
   },
 
   created () {
     this.socket.on('roomClosed', () => {
-      Cookies.remove('roomParams')
+      Cookies.remove('session_id')
       this.$router.push('/')
       alert('Room was disbanded!')
     })
 
     this.socket.on('updateRoom', (room) => {
-      let params = Cookies.getJSON('roomParams')
       this.stage = room.stage
       this.players = room.players
-      params.stage = room.stage
-      params.players = room.players
-      Cookies.set('roomParams', params)
     })
   },
 
   methods: {
     closeRoom () {
-      Cookies.remove('roomParams')
-      this.socket.emit('closeRoom', this.roomCode, () => {
+      this.socket.emit('closeRoom', this.roomCode, Cookies.get('session_id'), () => {
+        Cookies.remove('session_id')
         this.$router.push('/')
       })
     },
 
     leaveRoom () {
-      Cookies.remove('roomParams')
-      this.socket.emit('leaveRoom', this.roomCode, () => {
+      this.socket.emit('leaveRoom', this.roomCode, Cookies.get('session_id'), () => {
+        Cookies.remove('session_id')
         this.$router.push('/')
       })
     },
 
     startGame () {
-      this.socket.emit('startGame', this.roomCode, () => {})
+      this.socket.emit('startGame', this.roomCode, Cookies.get('session_id'), () => {})
     }
   }
 }

@@ -34,8 +34,8 @@ import Cookies from '~/plugins/js-cookie'
 
 export default {
   async asyncData (context) {
-    let { data } = await axios.get('/api/rooms')
-    return { rooms: data }
+    let rooms = axios.get('/api/rooms/')
+    return { rooms }
   },
 
   data () {
@@ -47,12 +47,20 @@ export default {
   },
 
   beforeCreate () {
-    const roomParams = Cookies.getJSON('roomParams')
-    if (roomParams) {
-      this.$router.replace({
-        name: 'game',
-        params: roomParams
-      })
+    const sessionId = Cookies.get('session_id')
+    const autoconnectURL = '/api/autoconnect/' + sessionId
+    console.log(autoconnectURL)
+    if (sessionId) {
+      return axios.get(autoconnectURL)
+        .then((room) => {
+          console.log(room.data)
+          if (room.data) {
+            this.$router.replace({
+              name: 'game',
+              params: room.data
+            })
+          }
+        })
     }
   },
 
@@ -65,15 +73,15 @@ export default {
   methods: {
     startRoom () {
       if (this.playerName.length !== 0) {
-        this.socket.emit('startRoom', this.playerName, (room) => {
+        Cookies.set('session_id', this.socket.id)
+        this.socket.emit('startRoom', this.playerName, Cookies.get('session_id'), (room) => {
           const params = {
             roomCode: room.roomCode,
             playerName: this.playerName,
             players: room.players,
             stage: room.stage,
-            king: true
+            king: room.king
           }
-          Cookies.set('roomParams', params)
           this.$router.push({
             name: 'game',
             params
@@ -88,7 +96,7 @@ export default {
       if (this.playerName.length !== 0) {
         const upperCode = this.joinCode.toUpperCase()
         if (this.rooms.find((room) => room.roomCode === upperCode)) {
-          this.socket.emit('joinRoom', upperCode, this.playerName, (room) => {
+          this.socket.emit('joinRoom', upperCode, this.playerName, Cookies.get('session_id'), (room) => {
             const params = {
               roomCode: room.roomCode,
               playerName: this.playerName,

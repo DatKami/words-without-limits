@@ -55,6 +55,8 @@ export default class store {
     if (_player.king) _room.stage = 1;
 
     _room.stage = 1;
+
+    // TODO implement some timers or something
   }
 
   removePlayerFromRoom (socketid, roomCode) {
@@ -65,5 +67,16 @@ export default class store {
 
   getRoomByCode (roomCode) {
     return this.rooms.find((room) => room.roomCode === roomCode)
+  }
+
+  getRoomBySessionId (socketid) {
+    console.log("fuck");
+    return this.rooms.find((room) => {
+      console.log(room);
+      return room.players.some((player) => {
+        console.log(player);
+        return player.socketid === socketid
+      })
+    })
   }
 }

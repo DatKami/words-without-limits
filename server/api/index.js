@@ -1,12 +1,12 @@
 import { Router } from 'express'
 
-import users from './users'
 import rooms from './rooms'
+import autoconnect from './autoconnect'
 
 const router = Router()
 
 // Add USERS Routes
-router.use(users)
 router.use(rooms)
+router.use(autoconnect)
 
 export default router

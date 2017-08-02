@@ -9,12 +9,12 @@ const createSocket = (server) => {
   io.on('connection', (socket) => {
     socket.join('lobby')
 
-    socket.on('startRoom', (playerName, callback) => {
+    socket.on('startRoom', (playerName, session_id, callback) => {
       // Create new room
       const newRoomCode = store.createRoom()
 
       // Add player who initialized room to room
-      store.addPlayerToRoom(playerName, socket.id, newRoomCode, true)
+      store.addPlayerToRoom(playerName, session_id, newRoomCode, true)
 
       // Remove player from lobby, add them to new room created
       socket.leave('lobby').join(newRoomCode)
@@ -26,9 +26,9 @@ const createSocket = (server) => {
       callback(store.getRoomByCode(newRoomCode))
     })
 
-    socket.on('joinRoom', (roomCode, playerName, callback) => {
+    socket.on('joinRoom', (roomCode, playerName, session_id, callback) => {
       // Add player to specified room
-      store.addPlayerToRoom(playerName, socket.id, roomCode, false)
+      store.addPlayerToRoom(playerName, session_id, roomCode, false)
 
       // Move client from lobby to room
       socket.leave('lobby').join(roomCode)
@@ -43,7 +43,7 @@ const createSocket = (server) => {
       callback(store.getRoomByCode(roomCode))
     })
 
-    socket.on('closeRoom', (roomCode, callback) => {
+    socket.on('closeRoom', (roomCode, session_id, callback) => {
       // Close room
       store.closeRoom(roomCode)
 
@@ -60,9 +60,9 @@ const createSocket = (server) => {
       callback()
     })
 
-    socket.on('leaveRoom', (roomCode, callback) => {
+    socket.on('leaveRoom', (roomCode, session_id, callback) => {
       // Remove player from room using socket id
-      store.removePlayerFromRoom(socket.id, roomCode)
+      store.removePlayerFromRoom(session_id, roomCode)
 
       // Move client back to lobby
       socket.leave(roomCode).join('lobby')
@@ -77,9 +77,9 @@ const createSocket = (server) => {
       callback()
     })
 
-    socket.on('startGame', (roomCode, callback) => {
+    socket.on('startGame', (roomCode, session_id, callback) => {
       // Start game
-      store.startGame(socket.id, roomCode)
+      store.startGame(session_id, roomCode)
 
       // Update players still in room with new player info
       io.to(roomCode).emit('updateRoom', store.getRoomByCode(roomCode))
