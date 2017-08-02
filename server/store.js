@@ -23,7 +23,8 @@ export default class store {
     } while (this.rooms.includes(roomCode))
     let newRoom = {
       roomCode,
-      players: []
+      players: [],
+      stage: 0
     }
     this.rooms.push(newRoom)
     return roomCode
@@ -43,6 +44,17 @@ export default class store {
       socketid,
       king
     })
+  }
+
+
+  startGame (socketid, roomCode) {
+    let _room = this.getRoomByCode(roomCode)
+
+    let _player = _room.players.find((player) => player.socketid === socketid)
+
+    if (_player.king) _room.stage = 1;
+
+    _room.stage = 1;
   }
 
   removePlayerFromRoom (socketid, roomCode) {

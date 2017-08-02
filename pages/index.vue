@@ -9,10 +9,10 @@
     </label>
     <label>
       Join Room
-      <input 
-        v-model="joinCode" 
-        v-on:keyup.enter="joinRoom" 
-        maxLength=4 
+      <input
+        v-model="joinCode"
+        v-on:keyup.enter="joinRoom"
+        maxLength=4
         class="caps-input"
       >
     </label>
@@ -70,6 +70,7 @@ export default {
             roomCode: room.roomCode,
             playerName: this.playerName,
             players: room.players,
+            stage: room.stage,
             king: true
           }
           Cookies.set('roomParams', params)
@@ -91,6 +92,7 @@ export default {
             const params = {
               roomCode: room.roomCode,
               playerName: this.playerName,
+              stage: room.stage,
               players: room.players
             }
             Cookies.set('roomParams', params)

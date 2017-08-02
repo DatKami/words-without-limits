@@ -37,7 +37,7 @@ const createSocket = (server) => {
       io.to('lobby').emit('updateRooms', store.rooms)
 
       // Update everybody already in the room with the new state of the players
-      io.to(roomCode).emit('updatePlayers', store.getRoomByCode(roomCode).players)
+      io.to(roomCode).emit('updateRoom', store.getRoomByCode(roomCode))
 
       // Send back room information to client
       callback(store.getRoomByCode(roomCode))
@@ -71,7 +71,18 @@ const createSocket = (server) => {
       io.to('lobby').emit('updateRooms', store.rooms)
 
       // Update players still in room with new player info
-      io.to(roomCode).emit('updatePlayers', store.getRoomByCode(roomCode).players)
+      io.to(roomCode).emit('updateRoom', store.getRoomByCode(roomCode))
+
+      // cb
+      callback()
+    })
+
+    socket.on('startGame', (roomCode, callback) => {
+      // Start game
+      store.startGame(socket.id, roomCode)
+
+      // Update players still in room with new player info
+      io.to(roomCode).emit('updateRoom', store.getRoomByCode(roomCode))
 
       // cb
       callback()
